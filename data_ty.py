@@ -26,18 +26,24 @@ def load_sound_file_into_memory(path,dict_n):
 dict_n = {}
 file = [load_sound_file_into_memory(path,dict_n) for path in sound_file_paths]
 
-long_sound,fs = dict_n['rain'][0],dict_n['rain'][1]
-short_sound = dict_n['thunder'][0]
+long_sound,fs = dict_n['casio'][0],dict_n['casio'][1]
+short_sound = dict_n['drum'][0]
 
 def play_long_sound(long_sound,fs,snd):
     print('its_playing')
-    snd.play(long_sound,fs,device = snd.query_devices(2)['name'],loop = True)
+    snd.play(long_sound,fs,device = snd.query_devices(4)['name'],loop = True)
+
+def streamer(stream, data):
+    stream.start()
+    stream.write(data)
+    stream.close()
 
 def play_short_sound(short_sound,interval,fs,snd):
     while True:
         print("Played after",interval,":secs")
-        snd.OutputStream(fs,device=snd.query_devices(7)['name'])
-        
+        stream = snd.OutputStream(device=snd.query_devices(4)['name'], samplerate=48000, dtype='float32')
+        #snd.play(short_sound,fs,device=snd.query_devices(7)['name'])
+        streamer(stream,short_sound)
         time.sleep(interval)
 
 def get_device_number_if_usb_soundcard(index_info):
