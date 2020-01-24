@@ -31,32 +31,24 @@ short_sound = dict_n['drum'][0]
 
 def play_long_sound(long_sound,fs,snd):
     print('its_playing')
-    snd.play(long_sound,fs,device = snd.query_devices(4)['name'],loop = True)
-
-def streamer(stream, data):
-    stream.start()
-    stream.write(data)
-    stream.close()
+    to_start = True
+    stream = snd.OutputStream(device=snd.query_devices(4)['name'], samplerate=48000, dtype='float32')
+    while True:
+        if to_start:
+            stream.start()
+            to_start =False
+        stream.write(long_sound)
 
 def play_short_sound(short_sound,interval,fs,snd):
+    to_start = True
+    stream = snd.OutputStream(device=snd.query_devices(7)['name'], samplerate=48000, dtype='float32')
     while True:
         print("Played after",interval,":secs")
-        stream = snd.OutputStream(device=snd.query_devices(4)['name'], samplerate=48000, dtype='float32')
-        #snd.play(short_sound,fs,device=snd.query_devices(7)['name'])
-        streamer(stream,short_sound)
+        if to_start:
+            stream.start()
+            to_start =False
+        stream.write(short_sound)
         time.sleep(interval)
-
-def get_device_number_if_usb_soundcard(index_info):
-    index, info = index_info
-    print(index_info,index,info)
-    if "USB Audio Device" in info["name"]:
-        return index
-    return False
-
-
-usb_sound_card_indices = list(filter(lambda x: x is not False,
-                                     map(get_device_number_if_usb_soundcard,
-                                         [index_info for index_info in enumerate(sd.query_devices())])))
 
 if __name__ == "__main__":
     long_t = threading.Thread(target = play_long_sound,args=(long_sound,fs,sd))
@@ -65,27 +57,3 @@ if __name__ == "__main__":
     short_t.start()
     long_t.join()
     short_t.join()
-    print("exiting")
-
-
-
-import logging
-import threading
-import time
-
-def thread_function(name):
-    logging.info("Thread %s: starting", name)
-    time.sleep(2)
-    logging.info("Thread %s: finishing", name)
-
-if __name__ == "__main__":
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
-                        datefmt="%H:%M:%S")
-    logging.info("Main    : before creating thread")
-    x = threading.Thread(target=thread_function, args=(1,),daemon = False)
-    logging.info("Main    : before running thread")
-    x.start()
-    logging.info("Main    : wait for the thread to finish")
-    x.join()
-    logging.info("Main    : all done")
